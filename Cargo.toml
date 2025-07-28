@@ -1,0 +1,17 @@
+[package]
+name = "mopidy-rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = "*"
+toml = "*"
+mpd = "*"
+rsoundcloud = "*"
+
+[profile.dev]
+incremental = true
+
+[profile.release]
+lto = true
+opt-level = 3
