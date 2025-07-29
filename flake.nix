@@ -38,12 +38,26 @@
         {
           formatter = pkgs.nixfmt-rfc-style;
           packages = {
-            default = self'.packages.mopidy-rs;
-            mopidy-rs = pkgs.rustPlatform.buildRustPackage (_finalAttrs: {
-              pname = "mopidy-rs";
+            default = self'.packages.sonare;
+            sonare = pkgs.rustPlatform.buildRustPackage (_finalAttrs: {
+              pname = "sonare";
               version = "0.1.0";
               src = ./.;
-              buildInputs = with pkgs; [ openssl ];
+              buildInputs =
+                with pkgs;
+                [ openssl ]
+                ++ (with pkgs.gst_all_1; [
+                  glib-networking
+                  gstreamer
+                  gst-plugins-bad
+                  gst-plugins-base
+                  gst-plugins-good
+                  gst-plugins-ugly
+                  gst-plugins-rs
+                  gst-libav
+                  gst-vaapi
+                  gst-devtools
+                ]);
               nativeBuildInputs = with pkgs; [ pkg-config ];
               strictDeps = true;
               useFetchCargoVendor = true;
@@ -55,13 +69,14 @@
           devShells = {
             default = self'.devShells.devel;
             devel = pkgs.mkShell {
-              formatter = pkgs.rustfmt;
-              inputsFrom = [ self'.packages.mopidy-rs ];
+              inputsFrom = [ self'.packages.sonare ];
               packages = with pkgs; [
                 just # Make replacement
                 vale # Markdown linter
+                rust-analyzer # Rust lsp
+                rustfmt # Rust formatter
 
-                # Rust
+                # Rust utils
                 bacon # Watcher
                 cargo-info
                 hyperfine

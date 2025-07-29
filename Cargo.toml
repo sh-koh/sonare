@@ -1,15 +1,19 @@
 [package]
-name = "mopidy-rs"
+name = "sonare"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 futures-util = "*"
-mpd = { git = "https://github.com/htkhiem/rust-mpd" }
+mpd = "*"
 reqwest = { version = "*", features = ["stream", "json"] }
 soundcloud-rs = "*"
 tokio = { version = "*", features = ["full"] }
 toml = "*"
+gstreamer = "*"
+gstreamer-app = "*"
+gstreamer-player = "*"
+async-trait = "*"
 
 
 [profile.dev]
