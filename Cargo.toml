@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 futures-util = "*"
-mpd = "*"
+mpd = { git = "https://github.com/htkhiem/rust-mpd" }
 reqwest = { version = "*", features = ["stream", "json"] }
 soundcloud-rs = "*"
 tokio = { version = "*", features = ["full"] }

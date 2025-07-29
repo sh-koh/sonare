@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     mpd.push(mpd::Song { file: "http://127.0.0.1:6680".to_string(), ..Default::default() }).unwrap();
 
     let client = soundcloud_rs::Client::new().await?;
-    let track = client.get_track_by_urn("soundcloud:tracks:469079373").await?;
+    let track = client.get_track_by_urn("soundcloud:tracks:279605399").await?;
 
     let audio_data = soundcloud::stream_to(&client, &track).await?;
     println!("Got {} bytes of audio", audio_data.len());
