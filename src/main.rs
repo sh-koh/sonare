@@ -1,37 +1,35 @@
-use std::{io::Read, net::{TcpListener, TcpStream}};
-use std::io::{BufRead, BufReader, Write};
-use rsoundcloud::{
-    SoundCloudClient,
-    ResourceId,
-    TracksApi,
-    models::track::{Track},
+mod soundcloud;
+mod http;
+use std::{
+    error,
+    net::{TcpListener},
 };
 
-fn talk_to_mpd() {
-    let mut mpd = TcpStream::connect("127.0.0.1:6600").unwrap();
-  let mut reader = BufReader::new(mpd.try_clone().unwrap());
-    let mut welcome = String::new();
-    reader.read_line(&mut welcome).unwrap();
-    println!("MPD dit: {}", welcome.trim());
 
-    mpd.write_all(b"status\n").unwrap();
-    mpd.flush().unwrap();
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn error::Error>> {
 
-    for line in reader.by_ref().lines() {
-        let line = line.ok().unwrap();
-        println!("Réponse: {}", line);
+    let mut mpd = mpd::Client::connect("127.0.0.1:6600").unwrap();
+    mpd.volume(35).unwrap();
+    mpd.push(mpd::Song { file: "http://127.0.0.1:6680".to_string(), ..Default::default() }).unwrap();
+
+    let client = soundcloud_rs::Client::new().await?;
+    let track = client.get_track_by_urn("soundcloud:tracks:469079373").await?;
+
+    let audio_data = soundcloud::stream_to(&client, &track).await?;
+    println!("Got {} bytes of audio", audio_data.len());
+
+    let listener = TcpListener::bind("127.0.0.1:6680")?;
+    println!("Serving on http://127.0.0.1:6680");
+
+
+    loop {
+        let (socket, _) = listener.accept()?;
+        let data = audio_data.clone(); // cloning Vec<u8>
+        tokio::spawn(async move {
+            if let Err(e) = http::handle_client(socket, &data).await {
+                eprintln!("Client error: {e}");
+            }
+        });
     }
-}
-
-// async fn test_soundcloud() {
-    // let test = async {
-    //     let client = SoundCloudClient::default().await.unwrap();
-    //     let url = "https://soundcloud.com/soo0/lapix-silvia-320-1".to_string();
-    //     let track = client.get_track(ResourceId::Url(url)).await.unwrap();
-    //     track
-    // };
-// }
-
-fn main() {
-    talk_to_mpd();
 }

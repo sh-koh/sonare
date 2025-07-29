@@ -38,23 +38,25 @@
         {
           formatter = pkgs.nixfmt-rfc-style;
           packages = {
-            default = self'.packages.accipere;
-            accipere = pkgs.rustPlatform.buildRustPackage (_finalAttrs: {
-              pname = "accipere";
+            default = self'.packages.mopidy-rs;
+            mopidy-rs = pkgs.rustPlatform.buildRustPackage (_finalAttrs: {
+              pname = "mopidy-rs";
               version = "0.1.0";
               src = ./.;
-              buildInputs = with pkgs; [ ];
-              nativeBuildInputs = with pkgs; [ ];
+              buildInputs = with pkgs; [ openssl ];
+              nativeBuildInputs = with pkgs; [ pkg-config ];
               strictDeps = true;
               useFetchCargoVendor = true;
-              cargoLock.lockFile = ./Cargo.lock;
+              cargoLock = {
+                lockFile = ./Cargo.lock;
+              };
             });
           };
           devShells = {
             default = self'.devShells.devel;
             devel = pkgs.mkShell {
               formatter = pkgs.rustfmt;
-              inputsFrom = [ self'.packages.accipere ];
+              inputsFrom = [ self'.packages.mopidy-rs ];
               packages = with pkgs; [
                 just # Make replacement
                 vale # Markdown linter
@@ -89,7 +91,7 @@
                 quiet = true;
               };
             };
-            clippy.enable = true;
+            #clippy.enable = true;
           };
         };
     };

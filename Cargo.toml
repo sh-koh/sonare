@@ -4,10 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tokio = "*"
-toml = "*"
+futures-util = "*"
 mpd = "*"
-rsoundcloud = "*"
+reqwest = { version = "*", features = ["stream", "json"] }
+soundcloud-rs = "*"
+tokio = { version = "*", features = ["full"] }
+toml = "*"
+
 
 [profile.dev]
 incremental = true
