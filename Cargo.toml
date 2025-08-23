@@ -1,13 +1,31 @@
+[workspace]
+members = [
+  "sonare-core",
+  "sonare-soundcloud",
+  "sonare-spotify",
+  "sonare-youtube",
+]
+resolver = "2"
+
+[workspace.dependencies]
+futures-util = "*"
+tokio = { version = "*", features = ["full"] }
+async-trait = "*"
+
 [package]
 name = "sonare"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sonare-core = { path = "sonare-core" }
+sonare-soundcloud = { path = "sonare-soundcloud", optional = true }
+sonare-spotify = { path = "sonare-spotify", optional = true }
+sonare-youtube = { path = "sonare-youtube", optional = true }
+clap = { version = "*", features = ["derive"] }
 futures-util = "*"
 mpd = "*"
 reqwest = { version = "*", features = ["stream", "json"] }
-soundcloud-rs = "*"
 tokio = { version = "*", features = ["full"] }
 toml = "*"
 gstreamer = "*"
@@ -15,6 +33,11 @@ gstreamer-app = "*"
 gstreamer-player = "*"
 async-trait = "*"
 
+[features]
+default = []
+soundcloud = ["sonare-soundcloud"]
+spotify = ["sonare-spotify"]
+youtube = ["sonare-youtube"]
 
 [profile.dev]
 incremental = true

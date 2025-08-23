@@ -1,28 +1,27 @@
-use crate::providers::AudioProvider;
+use crate::cli::str_to_provider;
 use futures_util::StreamExt;
 use gstreamer::prelude::*;
 use gstreamer_app::AppSrc;
+use std::error;
 
-pub async fn play_stream(
-    provider: Box<dyn AudioProvider + Send + Sync>,
-    input: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn play(track: &str) -> Result<(), Box<dyn error::Error>> {
     gstreamer::init()?;
 
-    let url = provider.get_stream_url(input).await.unwrap();
+    let provider = str_to_provider(track).await?;
+    let url = provider.get_stream_url(track).await.unwrap();
     println!("Streaming from URL: {}", url);
 
     let pipeline = gstreamer::parse::launch(
         "appsrc name=mysrc format=3 ! decodebin ! audioconvert ! audioresample ! autoaudiosink",
     )?;
+
     let appsrc = pipeline
         .clone()
         .dynamic_cast::<gstreamer::Bin>()
-        .unwrap()
-        .by_name("mysrc")
-        .unwrap()
-        .downcast::<AppSrc>()
-        .unwrap();
+        .ok()
+        .and_then(|bin| bin.by_name("mysrc"))
+        .and_then(|e| e.downcast::<AppSrc>().ok())
+        .ok_or("Failed to get appsrc element")?;
 
     appsrc.set_format(gstreamer::Format::Time);
     appsrc.set_caps(Some(
@@ -38,18 +37,18 @@ pub async fn play_stream(
 
     while let Some(chunk) = stream.next().await {
         let chunk = chunk?;
-        let gst_buffer = gstreamer::Buffer::from_slice(chunk.to_vec());
-        appsrc.push_buffer(gst_buffer)?;
+        let buffer = gstreamer::Buffer::from_slice(chunk);
+        appsrc.push_buffer(buffer)?;
     }
 
     appsrc.end_of_stream()?;
 
     let bus = pipeline.bus().unwrap();
     for msg in bus.iter_timed(gstreamer::ClockTime::NONE) {
-        use gstreamer::MessageView;
+        use gstreamer::MessageView::*;
         match msg.view() {
-            MessageView::Eos(..) => break,
-            MessageView::Error(err) => {
+            Eos(..) => break,
+            Error(err) => {
                 eprintln!(
                     "GStreamer error from {:?}: {} ({:?})",
                     err.src().map(|s| s.path_string()),
@@ -58,11 +57,10 @@ pub async fn play_stream(
                 );
                 break;
             }
-            _ => (),
+            _ => {}
         }
     }
 
     pipeline.set_state(gstreamer::State::Null)?;
-
     Ok(())
 }

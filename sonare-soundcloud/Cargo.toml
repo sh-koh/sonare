@@ -1,0 +1,11 @@
+[package]
+name = "sonare-soundcloud"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+soundcloud-rs = "*"
+futures-util = { workspace = true }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+sonare-core = { path = "../sonare-core" }

@@ -1,4 +1,5 @@
-use crate::providers::AudioProvider;
+use async_trait::async_trait;
+use sonare_core::Provider;
 use soundcloud_rs::{
     query::TracksQuery,
     response::{Stream, StreamType, Track},
@@ -6,10 +7,11 @@ use soundcloud_rs::{
 };
 use std::error::Error;
 
-pub struct SoundCloud;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Soundcloud;
 
-#[async_trait::async_trait]
-impl AudioProvider for SoundCloud {
+#[async_trait]
+impl Provider for Soundcloud {
     async fn get_stream_url(&self, urn: &str) -> Result<String, Box<dyn Error + Send + Sync>> {
         let client = Client::new().await.unwrap();
         let track: Track = client.get_track_by_urn(urn).await.unwrap();

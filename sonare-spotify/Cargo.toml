@@ -1,0 +1,8 @@
+[package]
+name = "sonare-spotify"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rspotify = "*"
+sonare-core = { path = "../sonare-core" }

@@ -1,13 +1,13 @@
 mod backend;
+mod cli;
 mod http;
-mod providers;
 
-use providers::ProviderKind;
+use cli::cli_init;
+use sonare_core::Sonare;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let provider = ProviderKind::SoundCloud.as_provider();
-    let input = "soundcloud:tracks:1424212474"; // FIXME: hardcoded for now.
-    backend::play_stream(provider, input).await?;
+    // let sonare = Sonare::new();
+    cli_init().await;
     Ok(())
 }
